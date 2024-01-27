@@ -19,10 +19,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from code_evaluator.views import home, get_exercise
+from django.urls import path
+from code_evaluator.views import generate_and_evaluate
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('code_evaluator.urls')),  # Include app-level URLs
     path('exercise/<int:exercise_id>/', get_exercise, name='get_exercise'),  # Add this line
+    path('generate_and_evaluate', generate_and_evaluate, name='generate_and_evaluate'),
 
 ]
