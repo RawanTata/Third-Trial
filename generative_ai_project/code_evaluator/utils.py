@@ -1,20 +1,22 @@
 from transformers import pipeline
 
 def generate_solution(prompt, model='microsoft/CodeGPT-small-py'):
-    # Enhance the prompt for clarity
     refined_prompt = "Python code to: " + prompt
 
     # Initialize the model generator
     generator = pipeline('text-generation', model=model)
 
     # Adjust generation parameters
-    # Increase max_length for potentially longer solutions
-    # Set temperature to control randomness
-    generated_code = generator(refined_prompt, temperature=0.7, top_k=50, truncation=True)[0]['generated_text']
+    # Set max_length and unset temperature if needed
+    generated_code = generator(
+        refined_prompt,
+        max_length=100,  # Set your desired max_length
+        temperature=1.0,  # Unset temperature or set to None if not using sampling
+        top_k=50,
+        truncation=True
+    )[0]['generated_text']
 
-    # Post-process the output to refine the generated code
     cleaned_code = post_process_generated_code(generated_code)
-
     return cleaned_code
 
 def post_process_generated_code(code):
@@ -31,4 +33,14 @@ def post_process_generated_code(code):
 
 
 def evaluate_solution(generated_code, expected_code):
-    return {'match': generated_code.strip() == expected_code.strip()}
+    # Placeholder values for efficiency and best_practices
+    efficiency = True
+    best_practices = True
+
+    # Additional checks for correctness, efficiency, and best_practices can be added here
+    correctness = generated_code.strip() == expected_code.strip()
+    return {
+        'correctness': correctness,
+        'efficiency': efficiency,
+        'best_practices': best_practices,
+    }

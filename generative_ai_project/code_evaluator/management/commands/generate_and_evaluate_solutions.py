@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from code_evaluator.models import Exercise
 from code_evaluator.utils import generate_solution
-
+from code_evaluator.utils import generate_solution, post_process_generated_code, evaluate_solution
 # Import necessary utilities for evaluation
 import time
 

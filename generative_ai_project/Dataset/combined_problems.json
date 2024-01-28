@@ -107,5 +107,13 @@
             {"input": [8, "/", 4], "expected_output": "8 / 4 = 2.0"}
             
         ]
+    },
+
+    {
+        "description": "Take the temperature in degrees Celsius and convert it to Fahrenheit.",
+        "expected_solution": "celsius = float(input(\"Enter temperature in degrees Celsius: \"))\n\nfahrenheit = celsius*9/5+32\n\nprint(\"Temperature in Fahrenheit:\", fahrenheit)",
+        "programming_language": "Python",
+        "difficulty_level": "Harder",
+        "test_cases": []  
     }
 ]

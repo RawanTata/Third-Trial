@@ -17,30 +17,40 @@ def home(request):
  #   return render(request, 'home.html')  # Ensure you have a template named 'home.html'
     return render(request, 'code_evaluator/home.html')
 
+
 @require_http_methods(["POST"])
 @csrf_exempt  # Disable CSRF protection for this view
 def generate_and_evaluate(request):
+    results = {}
     for exercise in Exercise.objects.all():
         if not exercise.generated_solution:
             # Generate the solution
-            exercise.generated_solution = generate_solution(exercise.description)
+            exercise.generated_solution = generate_solution(
+                exercise.description)
             exercise.save()
 
         # Evaluate the solution
-        evaluation_result = evaluate_solution(exercise.generated_solution, exercise.expected_solution)
-        
+        evaluation_result = evaluate_solution(
+            exercise.generated_solution, exercise.expected_solution)
+
         # Update evaluation metrics
         exercise.evaluation_metrics = evaluation_result
         exercise.save()
+        results[exercise.exercise_id] = {
+            'correctness': exercise.evaluation_metrics.get('correctness', 'N/A'),
+            'efficiency': exercise.evaluation_metrics.get('efficiency', 'N/A'),
+            'best_practices': exercise.evaluation_metrics.get('best_practices', 'N/A')
+        }
+    return JsonResponse(results)
 
-    return JsonResponse({'status': 'success'})
 
 @api_view(['GET'])
 def get_exercise(request, exercise_id):
     exercise = get_object_or_404(Exercise, exercise_id=exercise_id)
-    
+
     if not exercise.generated_solution:
-        exercise.generated_solution = generate_solution(exercise.description, 'microsoft/CodeGPT-small-py')
+        exercise.generated_solution = generate_solution(
+            exercise.description, 'microsoft/CodeGPT-small-py')
         exercise.save()
 
     # Simple evaluation (can be enhanced)
