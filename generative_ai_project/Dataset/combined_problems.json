@@ -97,7 +97,7 @@
         ]
     },
     {
-        "description": "Create a simple calculator. That will be able to take user input of two numbers and the operation the user wants to perform.on",
+        "description": "Write a Python program that functions as a simple calculator. The program should take two numbers and an operation (addition, subtraction, multiplication, division) as input from the user and display the result.",
         "expected_solution": "def add(num1, num2):\n return num1 + num2\n \ndef subtract(num1, num2):\n return num1 - num2\n \ndef multiply(num1, num2):\n return num1 * num2\n \ndef divide(num1, num2):\n return num1 / num2\n \ndef modulo(num1, num2):\n return num1 % num2\n \n# Take input from the user\nnum1 = int(input(\"Enter first number: \"))\noperation = input(\"What you want to do(+, -, *, /, %):\")\nnum2 = int(input(\"Enter second number: \"))\n \nresult = 0\nif operation == '+':\n result = add(num1,num2)\nelif operation == '-':\n result = subtract(num1,num2)\nelif operation == '*':\n result = multiply(num1,num2)\nelif operation == '/':\n result = divide(num1,num2)\nelif operation == '%':\n result = modulo(num1,num2)\nelse:\n print(\"Please enter: +, -, *, / or %\")\n \nprint(num1, operation, num2, '=', result)",
         "programming_language": "Python",
         "difficulty_level": "Harder",

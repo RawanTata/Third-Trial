@@ -20,36 +20,19 @@ def trigger_generation_and_evaluation():
         st.error(f"HTTP error: {e}")
         return None
 
+import streamlit as st
+import pandas as pd
+
 def display_evaluation_results(results):
-    if results:
-        st.subheader("Evaluation Results:")
-        for exercise_id, metrics in results.items():
-            st.write(f"### Exercise ID: {exercise_id}")
-
-            # Extract and display matrix data if available in evaluation metrics
-            # matrix_data = metrics.get('matrix_data')
-            # if matrix_data is not None:
-            #     st.write("#### Matrix Data:")
-            #     st.write(matrix_data)
-            # else:
-            #     st.warning("Matrix data not available for this exercise.")
-
-            # Display other metrics
+    for exercise_id, exercise_results in results.items():
+        st.subheader(f"Exercise ID: {exercise_id}")
+        for model_name, metrics in exercise_results.items():
+            st.write(f"Results for {model_name}:")
             df = pd.DataFrame({
                 'Metric': ['Correctness', 'Efficiency', 'Best Practices'],
-                'Value': [metrics.get('correctness', 'N/A'),
-                          metrics.get('efficiency', 'N/A'),
-                          metrics.get('best_practices', 'N/A')]
+                'Value': [metrics['correctness'], metrics['efficiency'], metrics['best_practices']]
             })
             st.table(df)
-
-            # Visualization (if metrics are numerical)
-            # Modify this part as needed based on your metric types
-            if all(isinstance(metrics[key], bool) for key in metrics):
-                st.bar_chart(df.set_index('Metric'))
-
-    else:
-        st.warning("Error fetching evaluation results.")
 
 
 def main():
@@ -78,13 +61,14 @@ def main():
 
     # Trigger generation and evaluation
     if st.button("Generate and Evaluate"):
-        st.info("Generating and evaluating solutions. Please wait...")
-        evaluation_results = trigger_generation_and_evaluation()
-        if evaluation_results:
-            st.success("Generation and evaluation successful!")
-            display_evaluation_results(evaluation_results)
-        else:
-            st.warning("Error during generation and evaluation. Please check the server logs.")
+        with st.spinner("Generating and evaluating solutions. Please wait..."):
+            evaluation_results = trigger_generation_and_evaluation()
+            if evaluation_results:
+                st.success("Generation and evaluation successful!")
+                display_evaluation_results(evaluation_results)
+            else:
+                st.error("Error during generation and evaluation. Please check the server logs.")
+
 
 if __name__ == "__main__":
     main()

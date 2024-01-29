@@ -1,46 +1,101 @@
-from transformers import pipeline
+from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
 
-def generate_solution(prompt, model='microsoft/CodeGPT-small-py'):
-    refined_prompt = "Python code to: " + prompt
+import time
 
-    # Initialize the model generator
-    generator = pipeline('text-generation', model=model)
+def generate_solution(prompt, model_checkpoint):
+    tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
+    model = AutoModelForCausalLM.from_pretrained(model_checkpoint)
 
-    # Adjust generation parameters
-    # Set max_length and unset temperature if needed
-    generated_code = generator(
-        refined_prompt,
-        max_length=100,  # Set your desired max_length
-        temperature=1.0,  # Unset temperature or set to None if not using sampling
-        top_k=50,
-        truncation=True
-    )[0]['generated_text']
+    inputs = tokenizer(prompt, return_tensors="pt")
+    outputs = model.generate(**inputs, max_length=150, top_k=50)
 
-    cleaned_code = post_process_generated_code(generated_code)
-    return cleaned_code
+    return tokenizer.decode(outputs[0], skip_special_tokens=True).strip()
+
 
 def post_process_generated_code(code):
-    # Remove repeated phrases
+    # Split the code into lines and remove duplicates
     lines = code.split('\n')
-    unique_lines = list(set(lines))
-    processed_code = '\n'.join(unique_lines)
+    seen = set()
+    unique_lines = [line for line in lines if not (line in seen or seen.add(line))]
 
-    # Trim excess content (keeping a certain number of lines)
-    max_lines = 10  # Adjust this based on your needs
-    processed_code = '\n'.join(processed_code.split('\n')[:max_lines])
+    # Trim the code to a maximum number of lines
+    max_lines = 10
+    processed_code = '\n'.join(unique_lines[:max_lines])
 
     return processed_code.strip()
 
+def evaluate_solution(self, generated_code, test_cases):
+        # Evaluate the solutions based on correctness, efficiency, and best practices
+        correctness = evaluate_correctness(generated_code, test_cases)
+        efficiency = evaluate_efficiency(generated_code)
+        best_practices = evaluate_best_practices(generated_code)
 
-def evaluate_solution(generated_code, expected_code):
-    # Placeholder values for efficiency and best_practices
-    efficiency = True
-    best_practices = True
+        return {
+            'correctness': correctness,
+            'efficiency': efficiency,
+            'best_practices': best_practices
+        }
+def evaluate_correctness(generated_code, test_cases):
+    # This is a safer way to execute code using the 'exec' function.
+    # In production, consider using a restricted execution environment.
+    if test_cases is None:
+        # Handle the case where test_cases is None
+        return False
 
-    # Additional checks for correctness, efficiency, and best_practices can be added here
-    correctness = generated_code.strip() == expected_code.strip()
-    return {
-        'correctness': correctness,
-        'efficiency': efficiency,
-        'best_practices': best_practices,
-    }
+    for test_case in test_cases:
+        try:
+            input_data = test_case.get('input')
+            expected_output = test_case.get('expected_output')
+
+            if input_data is None or expected_output is None:
+                # Handle the case where input_data or expected_output is missing
+                return False
+
+            # Use 'exec' instead of 'eval'
+            namespace = {'input_data': input_data}
+            exec(generated_code, namespace)
+            output = namespace.get('output')
+
+            if output != expected_output:
+                return False
+        except Exception as e:
+            return False
+    return True
+
+def evaluate_efficiency(generated_code):
+    start_time = time.time()
+    try:
+        # Execute the code using 'exec'
+        namespace = {}
+        exec(generated_code, namespace)
+    except Exception as e:
+        return False
+    finally:
+        # Calculate the time taken
+        end_time = time.time()
+        execution_time = end_time - start_time
+
+    # Define a threshold value (adjust as needed)
+    some_threshold = 0.5
+
+    # Compare execution_time with a benchmark
+    # Return True if it's within acceptable limits
+    return execution_time < some_threshold
+
+def evaluate_best_practices(generated_code):
+    # In reality, use tools like Pylint or Flake8
+    # Here we just check for some basic Python best practices
+
+    if "import os" in generated_code and "os.system" in generated_code:
+        # Check for potentially dangerous operations
+        return False
+
+    # Define a length threshold value (adjust as needed)
+    some_length_threshold = 1000
+
+    if len(generated_code) > some_length_threshold:
+        # Check for overly long solutions
+        return False
+
+    # Add more checks as needed
+    return True

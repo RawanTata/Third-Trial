@@ -18,28 +18,21 @@ def home(request):
     return render(request, 'code_evaluator/home.html')
 
 
+# Define your model checkpoints
+MODEL_1_CHECKPOINT = 'EleutherAI/gpt-neo-1.3B'
+MODEL_2_CHECKPOINT = 'microsoft/CodeGPT-small-py'
+
 @require_http_methods(["POST"])
-@csrf_exempt  # Disable CSRF protection for this view
+@csrf_exempt
 def generate_and_evaluate(request):
     results = {}
     for exercise in Exercise.objects.all():
-        if not exercise.generated_solution:
-            # Generate the solution
-            exercise.generated_solution = generate_solution(
-                exercise.description)
-            exercise.save()
+        solution_1 = generate_solution(exercise.description, MODEL_1_CHECKPOINT)
+        solution_2 = generate_solution(exercise.description, MODEL_2_CHECKPOINT)
 
-        # Evaluate the solution
-        evaluation_result = evaluate_solution(
-            exercise.generated_solution, exercise.expected_solution)
-
-        # Update evaluation metrics
-        exercise.evaluation_metrics = evaluation_result
-        exercise.save()
-        results[exercise.exercise_id] = {
-            'correctness': exercise.evaluation_metrics.get('correctness', 'N/A'),
-            'efficiency': exercise.evaluation_metrics.get('efficiency', 'N/A'),
-            'best_practices': exercise.evaluation_metrics.get('best_practices', 'N/A')
+        results[exercise.id] = {
+            'solution_1': evaluate_solution(solution_1, exercise.expected_solution),
+            'solution_2': evaluate_solution(solution_2, exercise.expected_solution)
         }
     return JsonResponse(results)
 
@@ -50,7 +43,7 @@ def get_exercise(request, exercise_id):
 
     if not exercise.generated_solution:
         exercise.generated_solution = generate_solution(
-            exercise.description, 'microsoft/CodeGPT-small-py')
+            exercise.description)
         exercise.save()
 
     # Simple evaluation (can be enhanced)
