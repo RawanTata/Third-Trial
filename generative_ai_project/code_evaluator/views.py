@@ -5,7 +5,7 @@ from django.shortcuts import render
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .models import Exercise
+from .models import NewExercise
 from .utils import generate_solution
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
@@ -26,39 +26,39 @@ MODEL_2_CHECKPOINT = 'microsoft/CodeGPT-small-py'
 @csrf_exempt
 def generate_and_evaluate(request):
     results = {}
-    for exercise in Exercise.objects.all():
-        solution_1 = generate_solution(exercise.description, MODEL_1_CHECKPOINT)
-        solution_2 = generate_solution(exercise.description, MODEL_2_CHECKPOINT)
+    for NewExercise in NewExercise.objects.all():
+        solution_1 = generate_solution(NewExercise.description, MODEL_1_CHECKPOINT)
+        solution_2 = generate_solution(NewExercise.description, MODEL_2_CHECKPOINT)
 
-        results[exercise.id] = {
-            'solution_1': evaluate_solution(solution_1, exercise.expected_solution),
-            'solution_2': evaluate_solution(solution_2, exercise.expected_solution)
+        results[NewExercise.id] = {
+            'solution_1': evaluate_solution(solution_1, NewExercise.expected_solution),
+            'solution_2': evaluate_solution(solution_2, NewExercise.expected_solution)
         }
     return JsonResponse(results)
 
 
 @api_view(['GET'])
-def get_exercise(request, exercise_id):
-    exercise = get_object_or_404(Exercise, exercise_id=exercise_id)
+def get_NewExercise(request, NewExercise_id):
+    NewExercise = get_object_or_404(NewExercise, NewExercise_id=NewExercise_id)
 
-    if not exercise.generated_solution:
-        exercise.generated_solution = generate_solution(
-            exercise.description)
-        exercise.save()
+    if not NewExercise.generated_solution:
+        NewExercise.generated_solution = generate_solution(
+            NewExercise.description)
+        NewExercise.save()
 
     # Simple evaluation (can be enhanced)
-    exercise.evaluation_metrics = {
-        'match': exercise.generated_solution == exercise.expected_solution
+    NewExercise.evaluation_metrics = {
+        'match': NewExercise.generated_solution == NewExercise.expected_solution
     }
-    exercise.save()
+    NewExercise.save()
 
     data = {
-        'exercise_id': exercise.exercise_id,
-        'description': exercise.description,
-        'expected_solution': exercise.expected_solution,
-        'generated_solution': exercise.generated_solution,
-        'evaluation_metrics': exercise.evaluation_metrics,
-        'programming_language': exercise.programming_language,
-        'difficulty_level': exercise.difficulty_level,
+        'NewExercise_id': NewExercise.NewExercise_id,
+        'description': NewExercise.description,
+        'expected_solution': NewExercise.expected_solution,
+        'generated_solution': NewExercise.generated_solution,
+        'evaluation_metrics': NewExercise.evaluation_metrics,
+        'programming_language': NewExercise.programming_language,
+        'difficulty_level': NewExercise.difficulty_level,
     }
     return Response(data)

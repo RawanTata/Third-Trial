@@ -1,6 +1,7 @@
 from django.db import models
 
-class Exercise(models.Model):
+
+class NewExercise(models.Model):
     exercise_id = models.AutoField(primary_key=True)
     description = models.TextField()
     expected_solution = models.TextField()
