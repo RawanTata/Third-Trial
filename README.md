@@ -9,3 +9,5 @@ pip install torch==1.10.0+cpu torchvision==0.11.1+cpu torchaudio==0.10.0+cpu -f 
 pip install transformers djangorestframework
 
  
+ python manage.py import_exercises "F:\Master Degree\First Semester\Semester Project\dataset\Third Trial\generative_ai_project\Dataset\combined_problems.json"
+ python manage.py generate_and_evaluate_solutions  
